@@ -3,8 +3,8 @@ A small python script to help update and download your mods!
 
 ## Requirements
 - Python 3.6 or higher
-- Requests package
-- PyYAML package
+- `requests` package
+- `PyYAML` package
 
 ## How to use
 Edit the `config.yaml` file to select Minecraft version and also the mods to update/download.
