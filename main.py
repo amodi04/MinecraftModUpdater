@@ -9,24 +9,32 @@ if not os.path.exists("mods"):
 with open('config.yaml', 'r') as file:
     config = yaml.safe_load(file)
 
+mods_to_download = config["mods"]
 mc_version = config["mc_version"]
 
-for mod in config["mods"]:
-    res = requests.get(f"https://api.modrinth.com/v2/project/{mod}")
+for item in mods_to_download:
+    res = requests.get(f"https://api.modrinth.com/v2/project/{item}")
 
-    if res.status_code != 200:
-        print(f"{mod} not found!")
+    if not res.ok:
+        print(f"{item} not found!")
         continue
 
-    data = json.loads(res.text)
-    get_versions = requests.get(f"https://api.modrinth.com/v2/project/{mod}/version").text
-    get_versions = json.loads(get_versions)
+    mod_data = json.loads(res.content)
 
-    file_version_to_use = ""
-    for i in get_versions:
-        if mc_version in i["game_versions"]:
-            file_version_to_use = i
+    res = requests.get(f"https://api.modrinth.com/v2/project/{item}/version")
+
+    if not res.ok:
+        print(f"{item} versions not found!")
+        continue
+
+    mod_versions_data = json.loads(res.content)
+
+    mod_version_to_download = ""
+    for mod_version in mod_versions_data:
+        if mc_version in mod_version["game_versions"]:
+            mod_version_to_download = mod_version
             break
 
-    game_file = requests.get(file_version_to_use["files"][0]["url"])
-    open(f"mods/{mod}-{file_version_to_use['version_number']}.jar", 'wb').write(game_file.content)
+    mod_file = requests.get(mod_version_to_download["files"][0]["url"]).content
+    filename = mod_version_to_download["files"][0]["filename"]
+    open(f"mods/{filename}", 'wb').write(mod_file)
